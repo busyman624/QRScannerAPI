@@ -1,18 +1,54 @@
 package QrScannerAPI.QrScannerAPI;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class RoomRepository {
 
-    public void addRoom(RoomModel room) {
+    public int addRoom(RoomModel room) {
+        try {
+            PreparedStatement addStatement = DatabaseConnector.connection.prepareStatement(
+                    "insert into ADDED_ROOMS (ROOM_NUMBER) values (?)");
+            addStatement.setString(1, room.getRoomNumber());
+            addStatement.execute();
+
+            PreparedStatement getIdStatement = DatabaseConnector.connection.prepareStatement(
+                    "SELECT ROOM_ID FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?) order by ROWID desc");
+            getIdStatement.setString(1, room.getRoomNumber());
+            ResultSet resultSet = getIdStatement.executeQuery();
+            return resultSet.getInt("ROOM_ID");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return -1;
+        }
+    }
+
+    public void addQrCode(int roomId, byte[] qrCode){
         try {
             PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
-                    "insert into QR_CODES (room_number) values (?)");
-            preparedStatement.setString(1, room.getRoomNumber());
+                    "update ADDED_ROOMS set DATA_BLOB = (?) where ROOM_ID = (?)");
+            preparedStatement.setBytes(1, qrCode);
+            preparedStatement.setInt(2, roomId);
             preparedStatement.execute();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public byte[] getQrCode(int roomId){
+        try {
+            PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
+                    "SELECT DATA_BLOB FROM ADDED_ROOMS WHERE ROOM_ID=(?)");
+            preparedStatement.setInt(1, roomId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return IOUtils.toByteArray(resultSet.getBinaryStream("DATA_BLOB"));
+        } catch (SQLException | IOException e) {
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 }
