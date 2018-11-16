@@ -1,12 +1,14 @@
 package QrScannerAPI.QrScannerAPI;
 
 public class RoomModel {
-    private String message;
 
-    public String getMessage(){
-        return message;
+    private String roomNumber;
+
+    public String getRoomNumber(){
+        return roomNumber;
     }
-    public void setMessage(String message){
-        this.message = message;
+
+    public void setRoomNumber(String roomNumber){
+        this.roomNumber = roomNumber;
     }
 }

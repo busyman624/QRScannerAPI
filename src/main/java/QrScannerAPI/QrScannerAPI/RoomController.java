@@ -11,13 +11,12 @@ public class RoomController {
     private RoomRepository roomRepository;
 
     RoomController(){
-
         roomRepository = new RoomRepository();
     }
 
     @PostMapping(value = "/add")
     public ResponseEntity addRoom(@RequestBody RoomModel room) {
-        if(room.getMessage()=="")
+        if(room.getRoomNumber().isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
         roomRepository.addRoom(room);

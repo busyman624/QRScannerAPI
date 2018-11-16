@@ -11,7 +11,6 @@ public class DatabaseConnector {
     private final String url="jdbc:sqlite:D:/pg/repos/K/QRScanner/db/QRScanner.db";
 
     public void CreateConnection(){
-
         connection = null;
 
         try {
