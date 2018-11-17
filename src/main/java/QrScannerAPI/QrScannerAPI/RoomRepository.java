@@ -12,8 +12,13 @@ public class RoomRepository {
     public int addRoom(RoomModel room) {
         try {
             PreparedStatement addStatement = DatabaseConnector.connection.prepareStatement(
-                    "insert into ADDED_ROOMS (ROOM_NUMBER) values (?)");
+                    "insert into ADDED_ROOMS" +
+                        " (ROOM_NUMBER, TYPE, AVAILABILITY, DESCRIPTION)" +
+                        " values (?, ?, ? , ?)");
             addStatement.setString(1, room.getRoomNumber());
+            addStatement.setString(2, room.getType());
+            addStatement.setString(3, room.getAvailability());
+            addStatement.setString(4, room.getDescription());
             addStatement.execute();
 
             PreparedStatement getIdStatement = DatabaseConnector.connection.prepareStatement(
@@ -30,7 +35,7 @@ public class RoomRepository {
     public void addQrCode(int roomId, byte[] qrCode){
         try {
             PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
-                    "update ADDED_ROOMS set DATA_BLOB = (?) where ROOM_ID = (?)");
+                    "update ADDED_ROOMS set QR_CODE = (?) where ROOM_ID = (?)");
             preparedStatement.setBytes(1, qrCode);
             preparedStatement.setInt(2, roomId);
             preparedStatement.execute();
@@ -42,7 +47,7 @@ public class RoomRepository {
     public byte[] getQrCode(int roomId){
         try {
             PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
-                    "SELECT DATA_BLOB FROM ADDED_ROOMS WHERE ROOM_ID=(?)");
+                    "SELECT QR_CODE FROM ADDED_ROOMS WHERE ROOM_ID=(?)");
             preparedStatement.setInt(1, roomId);
             ResultSet resultSet = preparedStatement.executeQuery();
             return IOUtils.toByteArray(resultSet.getBinaryStream("DATA_BLOB"));
