@@ -50,7 +50,7 @@ public class RoomRepository {
                     "SELECT QR_CODE FROM ADDED_ROOMS WHERE ROOM_ID=(?)");
             preparedStatement.setInt(1, roomId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return IOUtils.toByteArray(resultSet.getBinaryStream("DATA_BLOB"));
+            return IOUtils.toByteArray(resultSet.getBinaryStream("QR_CODE"));
         } catch (SQLException | IOException e) {
             System.out.println(e.getMessage());
             return null;
