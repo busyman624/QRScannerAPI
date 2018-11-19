@@ -1,25 +1,31 @@
 package QrScannerAPI.QrScannerAPI;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+@Component
 public class DatabaseConnector {
 
-    public static Connection connection;
+    @Value("${database.url}")
+    private String databaseUrl;
 
-    private final String url="jdbc:sqlite:D:/pg/repos/K/QRScanner/db/QRScanner.db";
-
-    public void CreateConnection(){
-        connection = null;
+    @Bean
+    public Connection CreateConnection(){
+        Connection connection=null;
 
         try {
-            connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(databaseUrl);
 
             System.out.println("Connection to SQLite has been established.");
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return connection;
     }
 }

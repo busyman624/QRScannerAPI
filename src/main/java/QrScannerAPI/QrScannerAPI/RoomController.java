@@ -1,5 +1,6 @@
 package QrScannerAPI.QrScannerAPI;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +13,8 @@ import java.io.IOException;
 @RequestMapping("/room")
 public class RoomController {
 
+    @Autowired
     private RoomRepository roomRepository;
-
-    RoomController(){
-        roomRepository = new RoomRepository();
-    }
 
     @PostMapping
     public ResponseEntity<String> addRoom(

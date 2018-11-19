@@ -14,7 +14,6 @@ public class QrScannerApiApplication  extends SpringBootServletInitializer {
 	}
 
 	public static void main(String[] args) {
-        (new DatabaseConnector()).CreateConnection();
 	    SpringApplication.run(QrScannerApiApplication.class, args);
 	}
 }

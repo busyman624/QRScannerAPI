@@ -1,17 +1,24 @@
 package QrScannerAPI.QrScannerAPI;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Component
 public class RoomRepository {
+
+    @Autowired
+    Connection connection;
 
     private boolean roomExists(String roomNumber){
         try{
-        PreparedStatement getStatement = DatabaseConnector.connection.prepareStatement(
+        PreparedStatement getStatement = connection.prepareStatement(
                 "SELECT ROOM_NUMBER FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?)");
         getStatement.setString(1, roomNumber);
         ResultSet resultSet = getStatement.executeQuery();
@@ -29,7 +36,7 @@ public class RoomRepository {
             if(roomExists(room.getRoomNumber()))
                 return null;
 
-            PreparedStatement addStatement = DatabaseConnector.connection.prepareStatement(
+            PreparedStatement addStatement = connection.prepareStatement(
                     "insert into ADDED_ROOMS" +
                         " (ROOM_NUMBER, TYPE, AVAILABILITY, DESCRIPTION)" +
                         " values (?, ?, ?, ?)");
@@ -49,7 +56,7 @@ public class RoomRepository {
     public RoomModel getRoom(String roomNumber){
         RoomModel room = null;
         try{
-            PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT ROOM_NUMBER, TYPE, AVAILABILITY, DESCRIPTION " +
                             "FROM ADDED_ROOMS where ROOM_NUMBER=(?);");
             preparedStatement.setString(1, roomNumber);
@@ -69,7 +76,7 @@ public class RoomRepository {
             if(!roomExists(roomNumber))
                 return false;
 
-            PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "update ADDED_ROOMS set QR_CODE = (?) where ROOM_NUMBER = (?)");
             preparedStatement.setBytes(1, qrCode);
             preparedStatement.setString(2, roomNumber);
@@ -84,7 +91,7 @@ public class RoomRepository {
 
     public byte[] getQrCode(String roomNumber){
         try {
-            PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT QR_CODE FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?)");
             preparedStatement.setString(1, roomNumber);
             ResultSet resultSet = preparedStatement.executeQuery();
