@@ -9,46 +9,84 @@ import java.sql.SQLException;
 
 public class RoomRepository {
 
-    public int addRoom(RoomModel room) {
+    private boolean roomExists(String roomNumber){
+        try{
+        PreparedStatement getStatement = DatabaseConnector.connection.prepareStatement(
+                "SELECT ROOM_NUMBER FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?)");
+        getStatement.setString(1, roomNumber);
+        ResultSet resultSet = getStatement.executeQuery();
+        if(resultSet.next())
+            return true;
+
+        } catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public String addRoom(RoomModel room) {
         try {
+            if(roomExists(room.getRoomNumber()))
+                return null;
+
             PreparedStatement addStatement = DatabaseConnector.connection.prepareStatement(
                     "insert into ADDED_ROOMS" +
                         " (ROOM_NUMBER, TYPE, AVAILABILITY, DESCRIPTION)" +
-                        " values (?, ?, ? , ?)");
+                        " values (?, ?, ?, ?)");
             addStatement.setString(1, room.getRoomNumber());
             addStatement.setString(2, room.getType());
             addStatement.setString(3, room.getAvailability());
             addStatement.setString(4, room.getDescription());
             addStatement.execute();
 
-            PreparedStatement getIdStatement = DatabaseConnector.connection.prepareStatement(
-                    "SELECT ROOM_ID FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?) order by ROWID desc");
-            getIdStatement.setString(1, room.getRoomNumber());
-            ResultSet resultSet = getIdStatement.executeQuery();
-            return resultSet.getInt("ROOM_ID");
+            return room.getRoomNumber();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return -1;
+            return null;
         }
     }
 
-    public void addQrCode(int roomId, byte[] qrCode){
-        try {
+    public RoomModel getRoom(String roomNumber){
+        RoomModel room = null;
+        try{
             PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
-                    "update ADDED_ROOMS set QR_CODE = (?) where ROOM_ID = (?)");
+                    "SELECT ROOM_NUMBER, TYPE, AVAILABILITY, DESCRIPTION " +
+                            "FROM ADDED_ROOMS where ROOM_NUMBER=(?);");
+            preparedStatement.setString(1, roomNumber);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                room = new RoomModel(resultSet.getString("ROOM_NUMBER"), resultSet.getString("TYPE"),
+                        resultSet.getString("AVAILABILITY"), resultSet.getString("DESCRIPTION"));
+            }
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return room;
+    }
+
+    public boolean addQrCode(String roomNumber, byte[] qrCode){
+        try {
+            if(!roomExists(roomNumber))
+                return false;
+
+            PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
+                    "update ADDED_ROOMS set QR_CODE = (?) where ROOM_NUMBER = (?)");
             preparedStatement.setBytes(1, qrCode);
-            preparedStatement.setInt(2, roomId);
+            preparedStatement.setString(2, roomNumber);
             preparedStatement.execute();
+
+            return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return false;
         }
     }
 
-    public byte[] getQrCode(int roomId){
+    public byte[] getQrCode(String roomNumber){
         try {
             PreparedStatement preparedStatement = DatabaseConnector.connection.prepareStatement(
-                    "SELECT QR_CODE FROM ADDED_ROOMS WHERE ROOM_ID=(?)");
-            preparedStatement.setInt(1, roomId);
+                    "SELECT QR_CODE FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?)");
+            preparedStatement.setString(1, roomNumber);
             ResultSet resultSet = preparedStatement.executeQuery();
             return IOUtils.toByteArray(resultSet.getBinaryStream("QR_CODE"));
         } catch (SQLException | IOException e) {

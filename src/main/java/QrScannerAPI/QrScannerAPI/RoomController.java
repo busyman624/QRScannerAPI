@@ -18,40 +18,52 @@ public class RoomController {
         roomRepository = new RoomRepository();
     }
 
-    @PostMapping(value = "/add")
-    public ResponseEntity<Integer> addRoom(@RequestBody RoomModel room) {
+    @PostMapping
+    public ResponseEntity<String> addRoom(
+            @RequestBody RoomModel room) {
         if(room.getRoomNumber().isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("RoomNumber must be filled out");
+
+        String roomNumber = roomRepository.addRoom(room);
+
+        return roomNumber == null ? ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Room already exists"):
+        ResponseEntity.status(HttpStatus.CREATED).body(roomNumber);
+    }
+
+    @GetMapping("/{roomNumber}")
+    public ResponseEntity<RoomModel> getRoom(
+            @PathVariable("roomNumber") String roomNumber){
+        if(roomNumber.isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
-        int roomId = roomRepository.addRoom(room);
-        if(roomId == -1)
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        return ResponseEntity.status(HttpStatus.CREATED).body(roomId);
+        RoomModel room = roomRepository.getRoom(roomNumber);
+
+        return room == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(null) :
+                ResponseEntity.status(HttpStatus.OK).body(room);
     }
 
-    @PostMapping("/{roomId}/qrCode")
+    @PostMapping("/{roomNumber}/qrCode")
     public ResponseEntity<String> addQrCode(
-            @PathVariable("roomId") int roomId,
-            @RequestParam("qrCode")MultipartFile qrCode
-            ){
-        if (!qrCode.isEmpty()) {
-            try {
-                byte[] bytes = qrCode.getBytes();
-                roomRepository.addQrCode(roomId, bytes);
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot parse file");
-            }
-        } else {
+            @PathVariable("roomNumber") String roomNumber,
+            @RequestParam("qrCode")MultipartFile qrCode){
+        if (qrCode.isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
+
+        try {
+            byte[] bytes = qrCode.getBytes();
+            boolean wasAdded = roomRepository.addQrCode(roomNumber, bytes);
+
+            return wasAdded ? ResponseEntity.status(HttpStatus.OK).body(null) :
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot parse file");
         }
-        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @GetMapping("/{roomId}/qrCode")
+    @GetMapping("/{roomNumber}/qrCode")
     public ResponseEntity<byte[]> getQrCode(
-            @PathVariable("roomId") int roomId
-    ){
-        byte[] qrCode = roomRepository.getQrCode(roomId);
+            @PathVariable("roomNumber") String roomNumber){
+        byte[] qrCode = roomRepository.getQrCode(roomNumber);
         if(qrCode == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 

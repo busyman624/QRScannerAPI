@@ -7,6 +7,13 @@ public class RoomModel {
     private String availability;
     private String description;
 
+    public RoomModel(String roomNumber, String type, String availability, String description){
+        this.roomNumber = roomNumber;
+        this.type = type;
+        this.availability = availability;
+        this.description = description;
+    }
+
     public String getRoomNumber(){
         return roomNumber;
     }
