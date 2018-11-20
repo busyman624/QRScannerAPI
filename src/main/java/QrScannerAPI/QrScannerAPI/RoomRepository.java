@@ -16,12 +16,12 @@ public class RoomRepository {
     @Autowired
     Connection connection;
 
-    private boolean roomExists(String roomNumber){
+    private boolean roomExists(String tableName, String roomNumber){
         try{
-        PreparedStatement getStatement = connection.prepareStatement(
-                "SELECT ROOM_NUMBER FROM ADDED_ROOMS WHERE ROOM_NUMBER=(?)");
-        getStatement.setString(1, roomNumber);
-        ResultSet resultSet = getStatement.executeQuery();
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT ROOM_NUMBER FROM " + tableName + " WHERE ROOM_NUMBER=(?)");
+        preparedStatement.setString(1, roomNumber);
+        ResultSet resultSet = preparedStatement.executeQuery();
         if(resultSet.next())
             return true;
 
@@ -33,7 +33,7 @@ public class RoomRepository {
 
     public String addRoom(RoomModel room) {
         try {
-            if(roomExists(room.getRoomNumber()))
+            if(roomExists("ADDED_ROOMS", room.getRoomNumber()))
                 return null;
 
             PreparedStatement addStatement = connection.prepareStatement(
@@ -73,7 +73,7 @@ public class RoomRepository {
 
     public boolean addQrCode(String roomNumber, byte[] qrCode){
         try {
-            if(!roomExists(roomNumber))
+            if(!roomExists("ADDED_ROOMS", roomNumber))
                 return false;
 
             PreparedStatement preparedStatement = connection.prepareStatement(
@@ -96,6 +96,37 @@ public class RoomRepository {
             preparedStatement.setString(1, roomNumber);
             ResultSet resultSet = preparedStatement.executeQuery();
             return IOUtils.toByteArray(resultSet.getBinaryStream("QR_CODE"));
+        } catch (SQLException | IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean addMap(String roomNumber, byte[] map){
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "insert into ROOMS_LOCATION (ROOM_NUMBER, LOCATION) values (?, ?)");
+            preparedStatement.setString(1, roomNumber);
+            preparedStatement.setBytes(2, map);
+            preparedStatement.execute();
+
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public byte[] getMap(String roomNumber){
+        try {
+            if(!roomExists("ROOMS_LOCATION", roomNumber))
+                return null;
+
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT LOCATION FROM ROOMS_LOCATION WHERE ROOM_NUMBER=(?)");
+            preparedStatement.setString(1, roomNumber);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return IOUtils.toByteArray(resultSet.getBinaryStream("LOCATION"));
         } catch (SQLException | IOException e) {
             System.out.println(e.getMessage());
             return null;

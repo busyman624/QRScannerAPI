@@ -69,4 +69,34 @@ public class RoomController {
         headers.setContentLength(qrCode.length);
         return new ResponseEntity<>(qrCode, headers, HttpStatus.OK);
     }
+
+    @PostMapping("/{roomNumber}/map")
+    public ResponseEntity<String> addMap(
+            @PathVariable("roomNumber") String roomNumber,
+            @RequestParam("map")MultipartFile map){
+        if (map.isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
+
+        try {
+            byte[] bytes = map.getBytes();
+            boolean wasAdded = roomRepository.addMap(roomNumber, bytes);
+
+            return wasAdded ? ResponseEntity.status(HttpStatus.OK).body(null) :
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot parse file");
+        }
+    }
+
+    @GetMapping("/{roomNumber}/map")
+    public ResponseEntity<byte[]> getMap(
+            @PathVariable("roomNumber") String roomNumber){
+        byte[] map = roomRepository.getMap(roomNumber);
+        if(map == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(map.length);
+        return new ResponseEntity<>(map, headers, HttpStatus.OK);
+    }
 }
