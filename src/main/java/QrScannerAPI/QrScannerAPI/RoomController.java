@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 
 @RestController
 @RequestMapping("/room")
@@ -15,6 +16,11 @@ public class RoomController {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @GetMapping("/ping")
+    public ResponseEntity ping(){
+        return ResponseEntity.status(HttpURLConnection.HTTP_OK).body(null);
+    }
 
     @PostMapping
     public ResponseEntity<String> addRoom(
