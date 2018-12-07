@@ -1,5 +1,6 @@
 package QrScannerAPI.QrScannerAPI;
 
+//model pokoju ulatwiajacy komunikacje miedzy aplikacja mobilna a API
 public class RoomModel {
 
     private String roomNumber;

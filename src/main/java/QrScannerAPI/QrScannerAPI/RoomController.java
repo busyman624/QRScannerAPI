@@ -10,18 +10,22 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+// Klasa kontrolera, której metody są wystawiane do sieci
 @RestController
 @RequestMapping("/room")
 public class RoomController {
 
+    //obiekt klasy RoomRepositury inicjalizowany przez framework Spring
     @Autowired
     private RoomRepository roomRepository;
 
+    //endpoint do sprawdzenia połączenia z API
     @GetMapping("/ping")
     public ResponseEntity ping(){
         return ResponseEntity.status(HttpURLConnection.HTTP_OK).body(null);
     }
 
+    //endpoint do zapisywania w bazie obiektu pokoju wysyłanego przez aplikację mobilną
     @PostMapping
     public ResponseEntity<String> addRoom(
             @RequestBody RoomModel room) {
@@ -34,6 +38,7 @@ public class RoomController {
         ResponseEntity.status(HttpStatus.CREATED).body(roomNumber);
     }
 
+    //endpoint do pobierania z bazy obiektu pokoju zapisanego wcześniej w bazie
     @GetMapping("/{roomNumber}")
     public ResponseEntity<RoomModel> getRoom(
             @PathVariable("roomNumber") String roomNumber){
@@ -46,6 +51,7 @@ public class RoomController {
                 ResponseEntity.status(HttpStatus.OK).body(room);
     }
 
+    //enpoint do zapisywania w bazie zdjecia kodu do juz istniejacego pokoju
     @PostMapping("/{roomNumber}/qrCode")
     public ResponseEntity<String> addQrCode(
             @PathVariable("roomNumber") String roomNumber,
@@ -64,6 +70,7 @@ public class RoomController {
         }
     }
 
+    //endpoint do pobierania zdjęcia z bazy danych dla konkretnego numeru pokoju
     @GetMapping("/{roomNumber}/qrCode")
     public ResponseEntity<byte[]> getQrCode(
             @PathVariable("roomNumber") String roomNumber){
@@ -76,6 +83,7 @@ public class RoomController {
         return new ResponseEntity<>(qrCode, headers, HttpStatus.OK);
     }
 
+    //endpoint do zapisyania w  bazie danych mapy dla nowo utworzonego pokoju
     @PostMapping("/{roomNumber}/map")
     public ResponseEntity<String> addMap(
             @PathVariable("roomNumber") String roomNumber,
@@ -94,6 +102,7 @@ public class RoomController {
         }
     }
 
+    //endpoint do pobierania z bazy danych mapy dla konkretnego, juz istniejacego pokoju
     @GetMapping("/{roomNumber}/map")
     public ResponseEntity<byte[]> getMap(
             @PathVariable("roomNumber") String roomNumber){

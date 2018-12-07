@@ -10,18 +10,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//klasa ktora odpowiada za komunikacje z baza danych
 @Component
 public class RoomRepository {
 
+    //obiekt przechowujacy polaczenie z db inicjalizowany przez framework Spring
     @Autowired
     Connection connection;
 
+    //metoda sprawdzajaca czy pokoj o podanym numerze istnieje w bazie danych, w konkretnej tabeli
     private boolean roomExists(String tableName, String roomNumber){
         try{
-        PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT ROOM_NUMBER FROM " + tableName + " WHERE ROOM_NUMBER=(?)");
-        preparedStatement.setString(1, roomNumber);
-        ResultSet resultSet = preparedStatement.executeQuery();
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT ROOM_NUMBER FROM " + tableName + " WHERE ROOM_NUMBER=(?)");
+            preparedStatement.setString(1, roomNumber);
+            ResultSet resultSet = preparedStatement.executeQuery();
         if(resultSet.next())
             return true;
 
@@ -31,6 +34,7 @@ public class RoomRepository {
         return false;
     }
 
+    //metoda do dodawania obiektu pokoju do db
     public String addRoom(RoomModel room) {
         try {
             if(roomExists("ADDED_ROOMS", room.getRoomNumber()))
@@ -53,6 +57,7 @@ public class RoomRepository {
         }
     }
 
+    //metoda zwracajaca obiekt pokoju o konkretnym numerze, ktory istnieje w db
     public RoomModel getRoom(String roomNumber){
         RoomModel room = null;
         try{
@@ -71,6 +76,7 @@ public class RoomRepository {
         return room;
     }
 
+    //metoda dodajaca do bazy danych zeskanowane zdjecie kodu qr
     public boolean addQrCode(String roomNumber, byte[] qrCode){
         try {
             if(!roomExists("ADDED_ROOMS", roomNumber))
@@ -89,6 +95,7 @@ public class RoomRepository {
         }
     }
 
+    //metoda pobierajaca z db zdjecie qr kodu przypisanego do konkretnego numeru pokoju istniejacego w bazie danych
     public byte[] getQrCode(String roomNumber){
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(
@@ -102,6 +109,7 @@ public class RoomRepository {
         }
     }
 
+    //metoda do zapisywania w bazie danych zdjecia mapy i tworzenia nowego wiersza w bazie danych z nowym pokojem
     public boolean addMap(String roomNumber, byte[] map){
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(
@@ -117,6 +125,7 @@ public class RoomRepository {
         }
     }
 
+    //metoda do pobierania z bazy danych zdjecia mapy dla konkretnego pokoju istniejacego w bazie danych
     public byte[] getMap(String roomNumber){
         try {
             if(!roomExists("ROOMS_LOCATION", roomNumber))

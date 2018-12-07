@@ -8,12 +8,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+//klasa odpowiadajaca za przechowywanie polaczenia z baza danych
 @Component
 public class DatabaseConnector {
 
+    //URL do bazy danych zaciagniete z application.properties
     @Value("${database.url}")
     private String databaseUrl;
 
+    //metoda tworzaca polaczenie z baza danych
     @Bean
     public Connection CreateConnection(){
         Connection connection=null;
